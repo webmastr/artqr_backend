@@ -1,12 +1,12 @@
-const stripe = require("stripe")(
-  "sk_test_51O8UWtKHNXl8PTAGxN4Gwt29m8jTT5gGWKM5bueaB51kYTO0c1r6oTFLuTj5rxuh58wSyGP4leDhqeQ7GSCvn28c00oHEk08BZ"
-);
+const stripe = require("stripe")("STRIPE_SECRET_KEY");
 
-const { createClient } = require('@supabase/supabase-js');
+const { createClient } = require("@supabase/supabase-js");
 
-
-const supabaseUrl = process.env.SUPABASE_URL || 'https://peflgfeieqtklcpkhszz.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZmxnZmVpZXF0a2xjcGtoc3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyMDEzNzksImV4cCI6MjA0Njc3NzM3OX0.OlEbttWuDvHHy9svUAr2quK4IrmRgkGUI0i8Z9LHfrU';
+const supabaseUrl =
+  process.env.SUPABASE_URL || "https://peflgfeieqtklcpkhszz.supabase.co";
+const supabaseKey =
+  process.env.SUPABASE_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZmxnZmVpZXF0a2xjcGtoc3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyMDEzNzksImV4cCI6MjA0Njc3NzM3OX0.OlEbttWuDvHHy9svUAr2quK4IrmRgkGUI0i8Z9LHfrU";
 const supabase = createClient(supabaseUrl, supabaseKey);
 const express = require("express");
 
@@ -62,7 +62,7 @@ const stripeCheckoutController = async (req, res) => {
         quantity: items[0].quantity,
         shipping_name: shipping.name,
         shipping_rate: shipping.rate,
-        status: "completed", 
+        status: "completed",
         session_id: session.id,
       },
     ]);
@@ -83,7 +83,7 @@ const stripeCheckoutController = async (req, res) => {
 };
 
 const stripeWebhookController = async (req, res) => {
-  const sig = req.headers['stripe-signature'];
+  const sig = req.headers["stripe-signature"];
 
   let event;
 
@@ -95,7 +95,7 @@ const stripeWebhookController = async (req, res) => {
   }
 
   // Handle successful payment event
-  if (event.type === 'checkout.session.completed') {
+  if (event.type === "checkout.session.completed") {
     const session = event.data.object;
 
     const sessionId = session.id;
@@ -108,7 +108,10 @@ const stripeWebhookController = async (req, res) => {
       .eq("session_id", sessionId);
 
     if (error) {
-      console.error("Error updating payment status in Supabase:", error.message);
+      console.error(
+        "Error updating payment status in Supabase:",
+        error.message
+      );
       return res.status(500).send("Supabase update failed");
     }
 
