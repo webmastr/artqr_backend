@@ -1,4 +1,6 @@
-const stripe = require("stripe")("STRIPE_SECRET_KEY");
+const stripe = require("stripe")(
+  "sk_test_51O8UWtKHNXl8PTAGxN4Gwt29m8jTT5gGWKM5bueaB51kYTO0c1r6oTFLuTj5rxuh58wSyGP4leDhqeQ7GSCvn28c00oHEk08BZ"
+);
 
 const { createClient } = require("@supabase/supabase-js");
 
