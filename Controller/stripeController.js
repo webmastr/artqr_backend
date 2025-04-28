@@ -124,10 +124,10 @@ const stripeWebhookController = async (req, res) => {
 };
 
 const successController = (req, res) =>
-  res.redirect("http://localhost:3000/success");
+  res.redirect("https://artofqr-main.vercel.app/success");
 
 const cancelController = (req, res) =>
-  res.redirect("http://localhost:3000/failure");
+  res.redirect("https://artofqr-main.vercel.app/failure");
 
 module.exports = {
   stripeCheckoutController,
