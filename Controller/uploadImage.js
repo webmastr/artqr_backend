@@ -56,7 +56,6 @@ const validateImage = async (url) => {
   }
 };
 
-// Product configurations with pricing information
 const productConfigs = [
   {
     product_id: 223,
@@ -105,7 +104,7 @@ const productConfigs = [
       product_options: {},
       files: [
         {
-          placement: "embroidery_front_large",
+          placement: "embroidery_front",
           position: {
             area_width: 1650,
             area_height: 600,
@@ -118,39 +117,316 @@ const productConfigs = [
       ],
     },
   },
+  {
+    product_id: 565,
+    name: "Product 565",
+    retail_price: 24.25,
+    variants: {
+      14453: { size: "One size", color: "Black", price: 24.25 },
+      14454: { size: "One size", color: "Navy", price: 24.25 },
+      14455: { size: "One size", color: "Red", price: 24.25 },
+      14456: { size: "One size", color: "Rope", price: 24.25 },
+    },
+    body: {
+      variant_ids: [14453, 14454, 14455, 14456],
+      printfile_id: 235,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 1800,
+            area_height: 1800,
+            width: 1800,
+            height: 1800,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 682,
+    name: "Product 682",
+    retail_price: 12.95,
+    variants: {
+      16952: { size: "5.5″×8.5″", color: "Black", price: 12.95 },
+      16953: { size: "5.5″×8.5″", color: "Blue", price: 12.95 },
+      16954: { size: "5.5″×8.5″", color: "Lime", price: 12.95 },
+      16955: { size: "5.5″×8.5″", color: "Navy", price: 12.95 },
+      16956: { size: "5.5″×8.5″", color: "Red", price: 12.95 },
+      16957: { size: "5.5″×8.5″", color: "Silver", price: 12.95 },
+      16958: { size: "5.5″×8.5″", color: "White", price: 12.95 },
+      18658: { size: "5.5″×8.5″", color: "Turquoise", price: 12.95 },
+      18659: { size: "5.5″×8.5″", color: "Orange", price: 12.95 },
+    },
+    body: {
+      variant_ids: [
+        16952, 16953, 16954, 16955, 18659, 16956, 16957, 18658, 16958,
+      ],
+      printfile_id: 444,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 900,
+            area_height: 1500,
+            width: 900,
+            height: 1500,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
 ];
 
-// 1. Get Synced Products API - Optimized
 const getSyncedProducts = async (req, res) => {
   try {
-    const response = await printfulClient.get(
-      `/store/products?store_id=${PRINTFUL_STORE_ID}`
-    );
+    // Fetch all catalog products (not store products)
+    const response = await printfulClient.get("/products");
 
-    // Add pricing information from our configurations
-    const products = response.data.result.map((product) => {
-      const config = productConfigs.find(
-        (cfg) => cfg.product_id === product.sync_product.product_id
-      );
-      if (config) {
-        product.pricing = {
-          retail_price: config.retail_price,
-          variants: config.variants,
-        };
-      }
-      return product;
+    // Map the response to a more usable format with product IDs and variant details
+    const catalogProducts = response.data.result.map((product) => {
+      return {
+        product_id: product.id,
+        type: product.type,
+        title: product.title,
+        model: product.model,
+        image: product.image,
+        variant_count: product.variant_count,
+      };
     });
+
+    // Return product catalog data
+    return res.status(200).json({
+      success: true,
+      product_count: catalogProducts.length,
+      products: catalogProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching catalog products:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch Printful catalog",
+    });
+  }
+};
+
+// Get detailed information about a specific product including variants
+
+const getProductDetails = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    // Get the store ID from environment variables
+    const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID || "14805728";
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        error: "Product ID is required",
+      });
+    }
+
+    // First, get the general catalog product information
+    let catalogProductResponse;
+    try {
+      // This endpoint gets catalog product info without requiring store_id
+      catalogProductResponse = await printfulClient.get(
+        `/products/${productId}`
+      );
+    } catch (catalogError) {
+      console.error("Error fetching catalog product:", catalogError);
+      // Continue even if this fails, as we might still get variant info from other endpoints
+    }
+
+    // Fetch printfile information to get valid placements
+    // This endpoint may need store_id based on error
+    const printfileResponse = await printfulClient.get(
+      `/mockup-generator/printfiles/${productId}?store_id=${PRINTFUL_STORE_ID}`
+    );
+    const printfileData = printfileResponse.data.result;
+
+    // Now try to get variant info from sync variants endpoint
+    let variantInfo = {};
+    let variantIds = [];
+
+    try {
+      // Explicitly include store_id in the request URL
+      const syncVariantsResponse = await printfulClient.get(
+        `/store/products?store_id=${PRINTFUL_STORE_ID}`
+      );
+
+      // Find the product in your store products
+      const storeProduct = syncVariantsResponse.data.result.find(
+        (product) => product.sync_product.external_id === productId.toString()
+      );
+
+      if (storeProduct) {
+        storeProduct.sync_variants.forEach((variant) => {
+          const variantId = variant.variant_id;
+          variantIds.push(variantId);
+          variantInfo[variantId] = {
+            name: variant.name,
+            size: variant.size || "Default",
+            color: variant.color || "Default",
+            price: variant.retail_price,
+          };
+        });
+      }
+    } catch (variantError) {
+      console.error("Error fetching variant info:", variantError);
+      // If we can't get variant info from store, use catalog info if available
+      if (
+        catalogProductResponse &&
+        catalogProductResponse.data.result.variants
+      ) {
+        catalogProductResponse.data.result.variants.forEach((variant) => {
+          variantIds.push(variant.id);
+          variantInfo[variant.id] = {
+            name: variant.name,
+            size: variant.size || "Default",
+            color: variant.color || "Default",
+            price: variant.price,
+          };
+        });
+      }
+    }
+
+    // If we still don't have variant info, use some default variants from printfile data
+    if (Object.keys(variantInfo).length === 0) {
+      // Create dummy variant ids
+      const dummyVariantId = 9000 + parseInt(productId);
+      variantIds = [dummyVariantId];
+      variantInfo[dummyVariantId] = {
+        name: "Default",
+        size: "Default",
+        color: "Default",
+        price: 14.99, // Default price
+      };
+    }
+
+    // Determine product name
+    const productName =
+      catalogProductResponse?.data?.result?.title || `Product ${productId}`;
+
+    // Build product configuration template
+    const productConfig = {
+      product_id: parseInt(productId),
+      name: productName,
+      retail_price: (
+        parseFloat(Object.values(variantInfo)[0].price) * 1.5
+      ).toFixed(2), // Example markup
+      variants: variantInfo,
+      body: {
+        variant_ids: variantIds.map((id) => parseInt(id)),
+        printfile_id:
+          printfileData.printfiles && printfileData.printfiles[0]
+            ? printfileData.printfiles[0].id
+            : 1,
+        format: "jpg",
+        width: 0,
+        product_options: {},
+        files: [
+          {
+            placement:
+              printfileData.placements &&
+              Object.keys(printfileData.placements).length > 0
+                ? Object.keys(printfileData.placements)[0]
+                : "default",
+            position: {
+              area_width: 1800,
+              area_height: 2400,
+              width: 1800,
+              height: 2400,
+              top: 0,
+              left: 0,
+            },
+          },
+        ],
+      },
+    };
 
     return res.status(200).json({
       success: true,
-      products,
+      product_data: {
+        product_id: parseInt(productId),
+        name: productName,
+        variants: variantInfo,
+        variant_ids: variantIds.map((id) => parseInt(id)),
+        printfiles: printfileData.printfiles || [],
+        placements: printfileData.placements || {},
+        store_id: PRINTFUL_STORE_ID, // Include store_id in the response
+      },
+      // Include a ready-to-use configuration
+      product_config: productConfig,
     });
   } catch (error) {
-    console.error("Error fetching synced products:", error);
+    console.error(
+      `Error fetching details for product ${req.params.productId}:`,
+      error
+    );
+
+    // More detailed error information
+    const errorDetails = error.response
+      ? {
+          status: error.response.status,
+          data: error.response.data,
+        }
+      : null;
+
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch synced products",
-      details: error.response?.data || error.message,
+      error: error.message || "Failed to fetch product details",
+      details: errorDetails,
+    });
+  }
+};
+
+// Search for products by name
+const searchProducts = async (req, res) => {
+  try {
+    const searchTerm = req.query.term?.toLowerCase();
+
+    if (!searchTerm) {
+      return res.status(400).json({
+        success: false,
+        error: "Search term is required",
+      });
+    }
+
+    // Fetch all catalog products
+    const response = await printfulClient.get("/products");
+
+    // Filter products by search term
+    const matchingProducts = response.data.result.filter((product) =>
+      product.title.toLowerCase().includes(searchTerm)
+    );
+
+    return res.status(200).json({
+      success: true,
+      product_count: matchingProducts.length,
+      products: matchingProducts.map((product) => ({
+        product_id: product.id,
+        title: product.title,
+        type: product.type,
+        model: product.model,
+        image: product.image,
+        variant_count: product.variant_count,
+      })),
+    });
+  } catch (error) {
+    console.error("Error searching products:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to search products",
     });
   }
 };
@@ -519,4 +795,5 @@ module.exports = {
   getShippingRates,
   placeOrder,
   getMockupResults,
+  getProductDetails,
 };
