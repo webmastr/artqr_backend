@@ -316,7 +316,7 @@ const productConfigs = [
     },
     body: {
       variant_ids: [16260, 16261, 16262, 16263, 16264],
-      printfile_id: 398, // Chose main body artwork (4950x6750) as the primary
+      printfile_id: 1, // Chose main body artwork (4950x6750) as the primary
       format: "jpg",
       width: 0,
       product_options: {},
@@ -324,10 +324,42 @@ const productConfigs = [
         {
           placement: "front",
           position: {
-            area_width: 4950,
-            area_height: 6750,
-            width: 4950,
-            height: 6750,
+            area_width: 1800,
+            area_height: 2400,
+            width: 1200,
+            height: 1600,
+            top: 0,
+            left: 300,
+          },
+        },
+      ],
+    },
+  },
+
+  {
+    product_id: 605,
+    name: "Product 605",
+    retail_price: 33, // Example retail markup, adjust as needed
+    variants: {
+      15524: { size: "AirPods", color: "Black", price: 33 },
+      15525: { size: "AirPods", color: "Blue", price: 33 },
+      15526: { size: "AirPods", color: "Grey", price: 33 },
+      15529: { size: "AirPods", color: "Pink", price: 33 },
+    },
+    body: {
+      variant_ids: [15524, 15525, 15526, 15529],
+      printfile_id: 336, // Choosing 336 as an example (318x318), adjust as needed
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 318,
+            area_height: 318,
+            width: 318,
+            height: 318,
             top: 0,
             left: 0,
           },
