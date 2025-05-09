@@ -218,6 +218,40 @@ const productConfigs = [
       ],
     },
   },
+
+  {
+    product_id: 788,
+    name: "Stainless Steel Water Bottle with a Straw Lid",
+    retail_price: 33, // Adjust if needed based on your pricing rules
+    variants: {
+      20175: {
+        name: "Stainless Steel Water Bottle with a Straw Lid (White / 32 oz)",
+        size: "32 oz",
+        color: "White",
+        price: 20.75,
+      },
+    },
+    body: {
+      variant_ids: [20175],
+      printfile_id: 679,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "deafult",
+          position: {
+            area_width: 3402,
+            area_height: 2091,
+            width: 3402,
+            height: 2091,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
 ];
 
 const getSyncedProducts = async (req, res) => {
