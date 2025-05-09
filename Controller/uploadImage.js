@@ -25,6 +25,25 @@ const printfulClient = axios.create({
 });
 
 // Add a response interceptor for rate limiting
+printfulClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 429) {
+      const retryAfter =
+        parseInt(error.response.headers["retry-after"] || "10") * 1000;
+      console.log(
+        `Rate limited. Retrying after ${retryAfter / 1000} seconds...`
+      );
+
+      // Wait for the retry-after period
+      await new Promise((resolve) => setTimeout(resolve, retryAfter));
+
+      // Retry the request
+      return printfulClient(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Check if image is accessible
 const validateImage = async (url) => {
@@ -231,281 +250,6 @@ const productConfigs = [
             area_height: 6750,
             width: 4950,
             height: 6750,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 788,
-    name: "Stainless Steel Water Bottle with a Straw Lid",
-    retail_price: 33, // Adjust if needed based on your pricing rules
-    variants: {
-      20175: {
-        name: "Stainless Steel Water Bottle with a Straw Lid (White / 32 oz)",
-        size: "32 oz",
-        color: "White",
-        price: 20.75,
-      },
-    },
-    body: {
-      variant_ids: [20175],
-      printfile_id: 679,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "deafult",
-          position: {
-            area_width: 3402,
-            area_height: 2091,
-            width: 3402,
-            height: 2091,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 821,
-    name: "Unisex Organic Mid-Weight Hoodie ",
-    retail_price: 33,
-    variants: {
-      20796: {
-        name: "Stanley/Stella SASU009 (Anthracite / S)",
-        size: "S",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20797: {
-        name: "Stanley/Stella SASU009 (Anthracite / M)",
-        size: "M",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20798: {
-        name: "Stanley/Stella SASU009 (Anthracite / L)",
-        size: "L",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20799: {
-        name: "Stanley/Stella SASU009 (Anthracite / XL)",
-        size: "XL",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20800: {
-        name: "Stanley/Stella SASU009 (Black / S)",
-        size: "S",
-        color: "Black",
-        price: 34.99,
-      },
-      20801: {
-        name: "Stanley/Stella SASU009 (Dark Heather Grey / S)",
-        size: "S",
-        color: "Dark Heather Grey",
-        price: 34.99,
-      },
-      20802: {
-        name: "Stanley/Stella SASU009 (Desert Dust / S)",
-        size: "S",
-        color: "Desert Dust",
-        price: 34.99,
-      },
-      20803: {
-        name: "Stanley/Stella SASU009 (French Navy / S)",
-        size: "S",
-        color: "French Navy",
-        price: 34.99,
-      },
-      20804: {
-        name: "Stanley/Stella SASU009 (Heather Grey / S)",
-        size: "S",
-        color: "Heather Grey",
-        price: 34.99,
-      },
-      20805: {
-        name: "Stanley/Stella SASU009 (White / S)",
-        size: "S",
-        color: "White",
-        price: 34.99,
-      },
-      20806: {
-        name: "Stanley/Stella SASU009 (Black / M)",
-        size: "M",
-        color: "Black",
-        price: 34.99,
-      },
-      20807: {
-        name: "Stanley/Stella SASU009 (Dark Heather Grey / M)",
-        size: "M",
-        color: "Dark Heather Grey",
-        price: 34.99,
-      },
-      20808: {
-        name: "Stanley/Stella SASU009 (Desert Dust / M)",
-        size: "M",
-        color: "Desert Dust",
-        price: 34.99,
-      },
-      20809: {
-        name: "Stanley/Stella SASU009 (French Navy / M)",
-        size: "M",
-        color: "French Navy",
-        price: 34.99,
-      },
-      20810: {
-        name: "Stanley/Stella SASU009 (Heather Grey / M)",
-        size: "M",
-        color: "Heather Grey",
-        price: 34.99,
-      },
-      20811: {
-        name: "Stanley/Stella SASU009 (White / M)",
-        size: "M",
-        color: "White",
-        price: 34.99,
-      },
-      20812: {
-        name: "Stanley/Stella SASU009 (Black / L)",
-        size: "L",
-        color: "Black",
-        price: 34.99,
-      },
-      20813: {
-        name: "Stanley/Stella SASU009 (Dark Heather Grey / L)",
-        size: "L",
-        color: "Dark Heather Grey",
-        price: 34.99,
-      },
-      20814: {
-        name: "Stanley/Stella SASU009 (Desert Dust / L)",
-        size: "L",
-        color: "Desert Dust",
-        price: 34.99,
-      },
-      20815: {
-        name: "Stanley/Stella SASU009 (French Navy / L)",
-        size: "L",
-        color: "French Navy",
-        price: 34.99,
-      },
-      20816: {
-        name: "Stanley/Stella SASU009 (Heather Grey / L)",
-        size: "L",
-        color: "Heather Grey",
-        price: 34.99,
-      },
-      20817: {
-        name: "Stanley/Stella SASU009 (White / L)",
-        size: "L",
-        color: "White",
-        price: 34.99,
-      },
-      20818: {
-        name: "Stanley/Stella SASU009 (Black / XL)",
-        size: "XL",
-        color: "Black",
-        price: 34.99,
-      },
-      20819: {
-        name: "Stanley/Stella SASU009 (Dark Heather Grey / XL)",
-        size: "XL",
-        color: "Dark Heather Grey",
-        price: 34.99,
-      },
-      20820: {
-        name: "Stanley/Stella SASU009 (Desert Dust / XL)",
-        size: "XL",
-        color: "Desert Dust",
-        price: 34.99,
-      },
-      20821: {
-        name: "Stanley/Stella SASU009 (French Navy / XL)",
-        size: "XL",
-        color: "French Navy",
-        price: 34.99,
-      },
-      20822: {
-        name: "Stanley/Stella SASU009 (Heather Grey / XL)",
-        size: "XL",
-        color: "Heather Grey",
-        price: 34.99,
-      },
-      20823: {
-        name: "Stanley/Stella SASU009 (White / XL)",
-        size: "XL",
-        color: "White",
-        price: 34.99,
-      },
-      20824: {
-        name: "Stanley/Stella SASU009 (Anthracite / 2XL)",
-        size: "2XL",
-        color: "Anthracite",
-        price: 36.99,
-      },
-      20825: {
-        name: "Stanley/Stella SASU009 (Black / 2XL)",
-        size: "2XL",
-        color: "Black",
-        price: 36.99,
-      },
-      20826: {
-        name: "Stanley/Stella SASU009 (Dark Heather Grey / 2XL)",
-        size: "2XL",
-        color: "Dark Heather Grey",
-        price: 36.99,
-      },
-      20827: {
-        name: "Stanley/Stella SASU009 (Desert Dust / 2XL)",
-        size: "2XL",
-        color: "Desert Dust",
-        price: 36.99,
-      },
-      20828: {
-        name: "Stanley/Stella SASU009 (French Navy / 2XL)",
-        size: "2XL",
-        color: "French Navy",
-        price: 36.99,
-      },
-      20829: {
-        name: "Stanley/Stella SASU009 (Heather Grey / 2XL)",
-        size: "2XL",
-        color: "Heather Grey",
-        price: 36.99,
-      },
-      20830: {
-        name: "Stanley/Stella SASU009 (White / 2XL)",
-        size: "2XL",
-        color: "White",
-        price: 36.99,
-      },
-    },
-    body: {
-      variant_ids: [
-        20824, 20798, 20797, 20796, 20799, 20825, 20812, 20806, 20800, 20818,
-        20826, 20813, 20807, 20801, 20819, 20827, 20814, 20808, 20802, 20820,
-        20828, 20815, 20809, 20803, 20821, 20829, 20816, 20810, 20804, 20822,
-        20830, 20817, 20811, 20805, 20823,
-      ],
-      printfile_id: 1, // Chosen as the primary file (1800x2400)
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front", // Assumed; update if needed
-          position: {
-            area_width: 1800,
-            area_height: 2400,
-            width: 1800,
-            height: 2400,
             top: 0,
             left: 0,
           },
