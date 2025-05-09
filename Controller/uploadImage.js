@@ -239,7 +239,7 @@ const productConfigs = [
       product_options: {},
       files: [
         {
-          placement: "deafult",
+          placement: "default",
           position: {
             area_width: 3402,
             area_height: 2091,
