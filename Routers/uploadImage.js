@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getSyncedProducts,
   generateMockups,
   getMockupResults,
   getShippingRates,
   placeOrder,
-  getProductDetails,
 } = require("../Controller/uploadImage");
 const fileUpload = require("express-fileupload");
 
@@ -22,9 +20,9 @@ router.use(
 
 // Products Endpoints
 // Fetch all synced products from Printful
-router.get("/products", getSyncedProducts);
+// router.get("/products", getSyncedProducts);
 
-router.get("/hello/:productId", getProductDetails);
+// router.get("/hello/:productId", getProductDetails);
 
 // Mockup Endpoints
 // Generate mockups for all products with an image

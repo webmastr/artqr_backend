@@ -25,25 +25,6 @@ const printfulClient = axios.create({
 });
 
 // Add a response interceptor for rate limiting
-printfulClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response && error.response.status === 429) {
-      const retryAfter =
-        parseInt(error.response.headers["retry-after"] || "10") * 1000;
-      console.log(
-        `Rate limited. Retrying after ${retryAfter / 1000} seconds...`
-      );
-
-      // Wait for the retry-after period
-      await new Promise((resolve) => setTimeout(resolve, retryAfter));
-
-      // Retry the request
-      return printfulClient(error.config);
-    }
-    return Promise.reject(error);
-  }
-);
 
 // Check if image is accessible
 const validateImage = async (url) => {
@@ -277,7 +258,7 @@ const productConfigs = [
       product_options: {},
       files: [
         {
-          placement: "default",
+          placement: "deafult",
           position: {
             area_width: 3402,
             area_height: 2091,
@@ -848,104 +829,68 @@ const generateMockups = async (req, res) => {
       });
     }
 
-    // Implement a robust rate limiting solution with exponential backoff
-    const processMockups = async () => {
-      const results = [];
-      // Process products sequentially instead of in parallel
-      for (const config of productConfigs) {
-        let retries = 0;
-        const maxRetries = 5;
-        let success = false;
+    // Batch process for mockup generation with rate limit handling
+    const mockupPromises = productConfigs.map(async (config) => {
+      try {
+        // Add image URL to files configuration
+        const mockupConfig = {
+          ...config.body,
+          files: config.body.files.map((file) => ({
+            ...file,
+            image_url: imageUrl,
+          })),
+        };
 
-        while (!success && retries < maxRetries) {
-          try {
-            // Add image URL to files configuration
-            const mockupConfig = {
-              ...config.body,
-              files: config.body.files.map((file) => ({
-                ...file,
-                image_url: imageUrl,
-              })),
-            };
+        // Add a small delay between each request to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
-            // Add a delay between requests, increasing with each retry
-            const delay = 500 * Math.pow(2, retries); // Exponential backoff: 500ms, 1s, 2s, 4s, 8s
-            await new Promise((resolve) => setTimeout(resolve, delay));
+        const response = await printfulClient.post(
+          `/mockup-generator/create-task/${config.product_id}?store_id=${PRINTFUL_STORE_ID}`,
+          mockupConfig
+        );
 
-            const response = await printfulClient.post(
-              `/mockup-generator/create-task/${config.product_id}?store_id=${PRINTFUL_STORE_ID}`,
-              mockupConfig
-            );
-
-            results.push({
-              product_id: config.product_id,
-              product_name: config.name,
-              pricing: {
-                retail_price: config.retail_price,
-                variants: config.variants,
-              },
-              success: true,
-              mockupTaskKey: response.data.result.task_key,
-              placement: mockupConfig.files[0].placement,
-              message: `Mockup generated successfully for product ID: ${config.product_id}`,
-            });
-
-            success = true;
-          } catch (error) {
-            // Check if this is a rate limit error (429)
-            if (error.response && error.response.status === 429) {
-              retries++;
-
-              // If we haven't exceeded max retries, wait and try again
-              if (retries < maxRetries) {
-                // Get retry-after header or use exponential backoff
-                const retryAfter = error.response.headers["retry-after"]
-                  ? parseInt(error.response.headers["retry-after"]) * 1000
-                  : 1000 * Math.pow(2, retries);
-
-                console.log(
-                  `Rate limited. Retrying after ${retryAfter / 1000} seconds...`
-                );
-                await new Promise((resolve) => setTimeout(resolve, retryAfter));
-              } else {
-                // Max retries exceeded
-                results.push({
-                  product_id: config.product_id,
-                  product_name: config.name,
-                  success: false,
-                  error: "Rate limit exceeded. Maximum retries reached.",
-                  message: `Failed to generate mockup for product ID: ${config.product_id} after ${maxRetries} retries`,
-                });
-              }
-            } else {
-              // Not a rate limit error, record failure and move on
-              console.error(
-                `Error generating mockup for product ${config.product_id}:`,
-                error.response?.data || error
-              );
-
-              results.push({
-                product_id: config.product_id,
-                product_name: config.name,
-                success: false,
-                error: error.response?.data?.error || error.message,
-                message: `Failed to generate mockup for product ID: ${config.product_id}`,
-              });
-
-              // Don't retry for non-rate-limit errors
-              break;
-            }
-          }
-        }
+        return {
+          product_id: config.product_id,
+          product_name: config.name,
+          pricing: {
+            retail_price: config.retail_price,
+            variants: config.variants,
+          },
+          success: true,
+          mockupTaskKey: response.data.result.task_key,
+          placement: mockupConfig.files[0].placement,
+          message: `Mockup generated successfully for product ID: ${config.product_id}`,
+        };
+      } catch (error) {
+        console.error(
+          `Error generating mockup for product ${config.product_id}:`,
+          error.response?.data || error
+        );
+        return {
+          product_id: config.product_id,
+          product_name: config.name,
+          success: false,
+          error: error.response?.data?.error || error.message,
+          message: `Failed to generate mockup for product ID: ${config.product_id}`,
+        };
       }
-      return results;
-    };
+    });
 
-    // Process mockups sequentially with rate limiting
-    const mockupResults = await processMockups();
+    const mockupResults = await Promise.allSettled(mockupPromises);
 
-    const successfulMockups = mockupResults.filter((result) => result.success);
-    const failedMockups = mockupResults.filter((result) => !result.success);
+    const successfulMockups = mockupResults
+      .filter((result) => result.status === "fulfilled" && result.value.success)
+      .map((result) => result.value);
+
+    const failedMockups = mockupResults
+      .filter(
+        (result) =>
+          result.status === "rejected" ||
+          (result.status === "fulfilled" && !result.value.success)
+      )
+      .map((result) =>
+        result.status === "rejected" ? { error: result.reason } : result.value
+      );
 
     return res.status(200).json({
       success: true,
