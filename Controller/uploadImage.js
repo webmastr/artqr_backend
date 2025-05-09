@@ -60,13 +60,13 @@ const productConfigs = [
   {
     product_id: 223,
     name: "Premium T-Shirt",
-    retail_price: 24.99,
+    retail_price: 33,
     variants: {
-      8024: { size: "S", price: 14.5 },
-      8025: { size: "M", price: 14.5 },
-      8026: { size: "L", price: 14.5 },
-      8027: { size: "XL", price: 14.5 },
-      8028: { size: "2XL", price: 16.0 },
+      8024: { size: "S", price: 33 },
+      8025: { size: "M", price: 33 },
+      8026: { size: "L", price: 33 },
+      8027: { size: "XL", price: 33 },
+      8028: { size: "2XL", price: 33 },
     },
     body: {
       variant_ids: [8024, 8025, 8026, 8027, 8028],
@@ -78,12 +78,12 @@ const productConfigs = [
         {
           placement: "front",
           position: {
-            area_width: 1800,
-            area_height: 2400,
-            width: 1200,
-            height: 1600,
-            top: 0,
-            left: 300,
+            area_width: 2800,
+            area_height: 2800,
+            width: 1400,
+            height: 1400,
+            top: 400, // moved lower
+            left: 1500, // moved towards right chest
           },
         },
       ],
@@ -92,9 +92,9 @@ const productConfigs = [
   {
     product_id: 206,
     name: "Embroidered Hat",
-    retail_price: 19.99,
+    retail_price: 33,
     variants: {
-      7853: { size: "One Size", price: 12.95 },
+      7853: { size: "One Size", price: 33 },
     },
     body: {
       variant_ids: [7853],
@@ -120,12 +120,12 @@ const productConfigs = [
   {
     product_id: 565,
     name: "Product 565",
-    retail_price: 24.25,
+    retail_price: 33,
     variants: {
-      14453: { size: "One size", color: "Black", price: 24.25 },
-      14454: { size: "One size", color: "Navy", price: 24.25 },
-      14455: { size: "One size", color: "Red", price: 24.25 },
-      14456: { size: "One size", color: "Rope", price: 24.25 },
+      14453: { size: "One size", color: "Black", price: 33 },
+      14454: { size: "One size", color: "Navy", price: 33 },
+      14455: { size: "One size", color: "Red", price: 33 },
+      14456: { size: "One size", color: "Rope", price: 33 },
     },
     body: {
       variant_ids: [14453, 14454, 14455, 14456],
@@ -151,12 +151,12 @@ const productConfigs = [
   {
     product_id: 682,
     name: "Product 682",
-    retail_price: 12.95,
+    retail_price: 33,
     variants: {
-      16952: { size: "5.5″×8.5″", color: "Black", price: 12.95 },
-      16953: { size: "5.5″×8.5″", color: "Blue", price: 12.95 },
-      16954: { size: "5.5″×8.5″", color: "Lime", price: 12.95 },
-      16955: { size: "5.5″×8.5″", color: "Navy", price: 12.95 },
+      16952: { size: "5.5″×8.5″", color: "Black", price: 33 },
+      16953: { size: "5.5″×8.5″", color: "Blue", price: 33 },
+      16954: { size: "5.5″×8.5″", color: "Lime", price: 33 },
+      16955: { size: "5.5″×8.5″", color: "Navy", price: 33 },
     },
     body: {
       variant_ids: [16952, 16953, 16954],
@@ -188,13 +188,13 @@ const productConfigs = [
         name: "Set of Pin Buttons (White / 1.25″)",
         size: "1.25″",
         color: "White",
-        price: 8.25,
+        price: 33,
       },
       16412: {
         name: "Set of Pin Buttons (White / 2.25″)",
         size: "2.25″",
         color: "White",
-        price: 9.25,
+        price: 33,
       },
     },
     body: {
@@ -218,17 +218,16 @@ const productConfigs = [
       ],
     },
   },
-
   {
     product_id: 788,
     name: "Stainless Steel Water Bottle with a Straw Lid",
-    retail_price: 33, // Adjust if needed based on your pricing rules
+    retail_price: 33,
     variants: {
       20175: {
         name: "Stainless Steel Water Bottle with a Straw Lid (White / 32 oz)",
         size: "32 oz",
         color: "White",
-        price: 20.75,
+        price: 33,
       },
     },
     body: {
@@ -240,57 +239,6 @@ const productConfigs = [
       files: [
         {
           placement: "default",
-          position: {
-            area_width: 3402,
-            area_height: 2091,
-            width: 3402,
-            height: 2091,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 821,
-    name: "Unisex Organic Mid-Weight Hoodie ",
-    retail_price: 33,
-    variants: {
-      20796: {
-        name: "Stanley/Stella SASU009 (Anthracite / S)",
-        size: "S",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20797: {
-        name: "Stanley/Stella SASU009 (Anthracite / M)",
-        size: "M",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20798: {
-        name: "Stanley/Stella SASU009 (Anthracite / L)",
-        size: "L",
-        color: "Anthracite",
-        price: 34.99,
-      },
-      20799: {
-        name: "Stanley/Stella SASU009 (Anthracite / XL)",
-        size: "XL",
-        color: "Anthracite",
-        price: 34.99,
-      },
-    },
-    body: {
-      variant_ids: [20798, 20797, 20796, 20799, ,],
-      printfile_id: 1, // Chosen as the primary file (1800x2400)
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front", // Assumed; update if needed
           position: {
             area_width: 1800,
             area_height: 2400,
@@ -304,19 +252,70 @@ const productConfigs = [
     },
   },
   {
-    product_id: 644,
-    name: "Women's Pique Polo Shirt",
-    retail_price: 33, // You can adjust this based on markup logic
+    product_id: 821,
+    name: "Unisex Organic Mid-Weight Hoodie",
+    retail_price: 33,
     variants: {
-      16260: { size: "S", color: "White", price: 30.95 },
-      16261: { size: "M", color: "White", price: 30.95 },
-      16262: { size: "L", color: "White", price: 30.95 },
-      16263: { size: "XL", color: "White", price: 30.95 },
-      16264: { size: "2XL", color: "White", price: 32.5 },
+      20796: {
+        name: "Stanley/Stella SASU009 (Anthracite / S)",
+        size: "S",
+        color: "Anthracite",
+        price: 33,
+      },
+      20797: {
+        name: "Stanley/Stella SASU009 (Anthracite / M)",
+        size: "M",
+        color: "Anthracite",
+        price: 33,
+      },
+      20798: {
+        name: "Stanley/Stella SASU009 (Anthracite / L)",
+        size: "L",
+        color: "Anthracite",
+        price: 33,
+      },
+      20799: {
+        name: "Stanley/Stella SASU009 (Anthracite / XL)",
+        size: "XL",
+        color: "Anthracite",
+        price: 33,
+      },
+    },
+    body: {
+      variant_ids: [20798, 20797, 20796, 20799],
+      printfile_id: 1,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 2800,
+            area_height: 2800,
+            width: 1400,
+            height: 1400,
+            top: 400, // moved lower
+            left: 1500, // moved towards right chest
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 644,
+    name: "All-Over Print Recycled Unisex Sports Jersey",
+    retail_price: 33,
+    variants: {
+      16260: { size: "S", color: "White", price: 33 },
+      16261: { size: "M", color: "White", price: 33 },
+      16262: { size: "L", color: "White", price: 33 },
+      16263: { size: "XL", color: "White", price: 33 },
+      16264: { size: "2XL", color: "White", price: 33 },
     },
     body: {
       variant_ids: [16260, 16261, 16262, 16263, 16264],
-      printfile_id: 1, // Chose main body artwork (4950x6750) as the primary
+      printfile_id: 400,
       format: "jpg",
       width: 0,
       product_options: {},
@@ -326,20 +325,19 @@ const productConfigs = [
           position: {
             area_width: 1800,
             area_height: 2400,
-            width: 1200,
-            height: 1600,
+            width: 1800,
+            height: 2400,
             top: 0,
-            left: 300,
+            left: 0,
           },
         },
       ],
     },
   },
-
   {
     product_id: 605,
     name: "Product 605",
-    retail_price: 33, // Example retail markup, adjust as needed
+    retail_price: 33,
     variants: {
       15524: { size: "AirPods", color: "Black", price: 33 },
       15525: { size: "AirPods", color: "Blue", price: 33 },
@@ -348,7 +346,7 @@ const productConfigs = [
     },
     body: {
       variant_ids: [15524, 15525, 15526, 15529],
-      printfile_id: 336, // Choosing 336 as an example (318x318), adjust as needed
+      printfile_id: 336,
       format: "jpg",
       width: 0,
       product_options: {},
