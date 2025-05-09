@@ -157,16 +157,9 @@ const productConfigs = [
       16953: { size: "5.5″×8.5″", color: "Blue", price: 12.95 },
       16954: { size: "5.5″×8.5″", color: "Lime", price: 12.95 },
       16955: { size: "5.5″×8.5″", color: "Navy", price: 12.95 },
-      16956: { size: "5.5″×8.5″", color: "Red", price: 12.95 },
-      16957: { size: "5.5″×8.5″", color: "Silver", price: 12.95 },
-      16958: { size: "5.5″×8.5″", color: "White", price: 12.95 },
-      18658: { size: "5.5″×8.5″", color: "Turquoise", price: 12.95 },
-      18659: { size: "5.5″×8.5″", color: "Orange", price: 12.95 },
     },
     body: {
-      variant_ids: [
-        16952, 16953, 16954, 16955, 18659, 16956, 16957, 18658, 16958,
-      ],
+      variant_ids: [16952, 16953, 16954],
       printfile_id: 444,
       format: "jpg",
       width: 0,
@@ -179,6 +172,45 @@ const productConfigs = [
             area_height: 1500,
             width: 900,
             height: 1500,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 660,
+    name: "Set of Pin Buttons",
+    retail_price: 33,
+    variants: {
+      16411: {
+        name: "Set of Pin Buttons (White / 1.25″)",
+        size: "1.25″",
+        color: "White",
+        price: 8.25,
+      },
+      16412: {
+        name: "Set of Pin Buttons (White / 2.25″)",
+        size: "2.25″",
+        color: "White",
+        price: 9.25,
+      },
+    },
+    body: {
+      variant_ids: [16411, 16412],
+      printfile_id: 418,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 787,
+            area_height: 787,
+            width: 787,
+            height: 787,
             top: 0,
             left: 0,
           },
