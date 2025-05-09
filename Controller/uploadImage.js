@@ -277,7 +277,7 @@ const productConfigs = [
       product_options: {},
       files: [
         {
-          placement: "front", // Assumed placement name, update if needed
+          placement: "default", // Assumed placement name, update if needed
           position: {
             area_width: 3402,
             area_height: 2091,
@@ -293,7 +293,7 @@ const productConfigs = [
   {
     product_id: 821,
     name: "Unisex Organic Mid-Weight Hoodie ",
-    retail_price: 33, // You can adjust this based on desired margin
+    retail_price: 33,
     variants: {
       20796: {
         name: "Stanley/Stella SASU009 (Anthracite / S)",
