@@ -252,6 +252,89 @@ const productConfigs = [
       ],
     },
   },
+  {
+    product_id: 821,
+    name: "Unisex Organic Mid-Weight Hoodie ",
+    retail_price: 33,
+    variants: {
+      20796: {
+        name: "Stanley/Stella SASU009 (Anthracite / S)",
+        size: "S",
+        color: "Anthracite",
+        price: 34.99,
+      },
+      20797: {
+        name: "Stanley/Stella SASU009 (Anthracite / M)",
+        size: "M",
+        color: "Anthracite",
+        price: 34.99,
+      },
+      20798: {
+        name: "Stanley/Stella SASU009 (Anthracite / L)",
+        size: "L",
+        color: "Anthracite",
+        price: 34.99,
+      },
+      20799: {
+        name: "Stanley/Stella SASU009 (Anthracite / XL)",
+        size: "XL",
+        color: "Anthracite",
+        price: 34.99,
+      },
+    },
+    body: {
+      variant_ids: [20798, 20797, 20796, 20799, ,],
+      printfile_id: 1, // Chosen as the primary file (1800x2400)
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front", // Assumed; update if needed
+          position: {
+            area_width: 1800,
+            area_height: 2400,
+            width: 1800,
+            height: 2400,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 644,
+    name: "Women's Pique Polo Shirt",
+    retail_price: 33, // You can adjust this based on markup logic
+    variants: {
+      16260: { size: "S", color: "White", price: 30.95 },
+      16261: { size: "M", color: "White", price: 30.95 },
+      16262: { size: "L", color: "White", price: 30.95 },
+      16263: { size: "XL", color: "White", price: 30.95 },
+      16264: { size: "2XL", color: "White", price: 32.5 },
+    },
+    body: {
+      variant_ids: [16260, 16261, 16262, 16263, 16264],
+      printfile_id: 398, // Chose main body artwork (4950x6750) as the primary
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 4950,
+            area_height: 6750,
+            width: 4950,
+            height: 6750,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
 ];
 
 const getSyncedProducts = async (req, res) => {
