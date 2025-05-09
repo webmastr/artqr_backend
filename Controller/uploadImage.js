@@ -60,7 +60,7 @@ const productConfigs = [
   {
     product_id: 223,
     name: "Premium T-Shirt",
-    retail_price: 24.99,
+    retail_price: 33,
     variants: {
       8024: { size: "S", price: 14.5 },
       8025: { size: "M", price: 14.5 },
@@ -92,7 +92,7 @@ const productConfigs = [
   {
     product_id: 206,
     name: "Embroidered Hat",
-    retail_price: 19.99,
+    retail_price: 33,
     variants: {
       7853: { size: "One Size", price: 12.95 },
     },
@@ -120,7 +120,7 @@ const productConfigs = [
   {
     product_id: 565,
     name: "Product 565",
-    retail_price: 24.25,
+    retail_price: 33,
     variants: {
       14453: { size: "One size", color: "Black", price: 24.25 },
       14454: { size: "One size", color: "Navy", price: 24.25 },
@@ -151,7 +151,7 @@ const productConfigs = [
   {
     product_id: 682,
     name: "Product 682",
-    retail_price: 12.95,
+    retail_price: 33,
     variants: {
       16952: { size: "5.5″×8.5″", color: "Black", price: 12.95 },
       16953: { size: "5.5″×8.5″", color: "Blue", price: 12.95 },
@@ -179,6 +179,110 @@ const productConfigs = [
             area_height: 1500,
             width: 900,
             height: 1500,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 660,
+    name: "Set of Pin Buttons",
+    retail_price: 33,
+    variants: {
+      16411: {
+        name: "Set of Pin Buttons (White / 1.25″)",
+        size: "1.25″",
+        color: "White",
+        price: 8.25,
+      },
+      16412: {
+        name: "Set of Pin Buttons (White / 2.25″)",
+        size: "2.25″",
+        color: "White",
+        price: 9.25,
+      },
+    },
+    body: {
+      variant_ids: [16411, 16412],
+      printfile_id: 418,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front", // Assuming "front" as default if unspecified
+          position: {
+            area_width: 787,
+            area_height: 787,
+            width: 787,
+            height: 787,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 644,
+    name: "Women's Pique Polo Shirt",
+    retail_price: 33, // You can adjust this based on markup logic
+    variants: {
+      16260: { size: "S", color: "White", price: 30.95 },
+      16261: { size: "M", color: "White", price: 30.95 },
+      16262: { size: "L", color: "White", price: 30.95 },
+      16263: { size: "XL", color: "White", price: 30.95 },
+      16264: { size: "2XL", color: "White", price: 32.5 },
+    },
+    body: {
+      variant_ids: [16260, 16261, 16262, 16263, 16264],
+      printfile_id: 398, // Chose main body artwork (4950x6750) as the primary
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front",
+          position: {
+            area_width: 4950,
+            area_height: 6750,
+            width: 4950,
+            height: 6750,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+  },
+  {
+    product_id: 788,
+    name: "Stainless Steel Water Bottle with a Straw Lid",
+    retail_price: 33, // Adjust if needed based on your pricing rules
+    variants: {
+      20175: {
+        name: "Stainless Steel Water Bottle with a Straw Lid (White / 32 oz)",
+        size: "32 oz",
+        color: "White",
+        price: 20.75,
+      },
+    },
+    body: {
+      variant_ids: [20175],
+      printfile_id: 679,
+      format: "jpg",
+      width: 0,
+      product_options: {},
+      files: [
+        {
+          placement: "front", // Assumed placement name, update if needed
+          position: {
+            area_width: 3402,
+            area_height: 2091,
+            width: 3402,
+            height: 2091,
             top: 0,
             left: 0,
           },
