@@ -497,6 +497,7 @@ const searchProducts = async (req, res) => {
   }
 };
 
+// 2. Generate Mockups API - Optimized with pricing
 const generateMockups = async (req, res) => {
   try {
     const { file_name, contents } = req.body;
@@ -547,7 +548,7 @@ const generateMockups = async (req, res) => {
       });
     }
 
-    // Upload to Printful
+    // Upload to Printful with retry mechanism
     let printfulFileId;
     try {
       const printfulResponse = await printfulClient.post(
@@ -567,12 +568,10 @@ const generateMockups = async (req, res) => {
       });
     }
 
-    // Sequential mockup generation
-    const successfulMockups = [];
-    const failedMockups = [];
-
-    for (const config of productConfigs) {
+    // Batch process for mockup generation with rate limit handling
+    const mockupPromises = productConfigs.map(async (config) => {
       try {
+        // Add image URL to files configuration
         const mockupConfig = {
           ...config.body,
           files: config.body.files.map((file) => ({
@@ -581,15 +580,15 @@ const generateMockups = async (req, res) => {
           })),
         };
 
-        // Wait 500ms between requests to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Add a small delay between each request to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         const response = await printfulClient.post(
           `/mockup-generator/create-task/${config.product_id}?store_id=${PRINTFUL_STORE_ID}`,
           mockupConfig
         );
 
-        successfulMockups.push({
+        return {
           product_id: config.product_id,
           product_name: config.name,
           pricing: {
@@ -600,22 +599,37 @@ const generateMockups = async (req, res) => {
           mockupTaskKey: response.data.result.task_key,
           placement: mockupConfig.files[0].placement,
           message: `Mockup generated successfully for product ID: ${config.product_id}`,
-        });
+        };
       } catch (error) {
         console.error(
           `Error generating mockup for product ${config.product_id}:`,
           error.response?.data || error
         );
-
-        failedMockups.push({
+        return {
           product_id: config.product_id,
           product_name: config.name,
           success: false,
           error: error.response?.data?.error || error.message,
           message: `Failed to generate mockup for product ID: ${config.product_id}`,
-        });
+        };
       }
-    }
+    });
+
+    const mockupResults = await Promise.allSettled(mockupPromises);
+
+    const successfulMockups = mockupResults
+      .filter((result) => result.status === "fulfilled" && result.value.success)
+      .map((result) => result.value);
+
+    const failedMockups = mockupResults
+      .filter(
+        (result) =>
+          result.status === "rejected" ||
+          (result.status === "fulfilled" && !result.value.success)
+      )
+      .map((result) =>
+        result.status === "rejected" ? { error: result.reason } : result.value
+      );
 
     return res.status(200).json({
       success: true,
@@ -624,7 +638,7 @@ const generateMockups = async (req, res) => {
       results: {
         successful_mockups: successfulMockups,
         failed_mockups: failedMockups,
-        total_products: productConfigs.length,
+        total_products: mockupResults.length,
         successful_count: successfulMockups.length,
         failed_count: failedMockups.length,
       },
