@@ -4,6 +4,7 @@ const {
   stripeCheckoutController,
   successController,
   cancelController,
+  getAllEmails,
 } = require("../Controller/stripeController.js");
 
 // Middleware
@@ -14,5 +15,6 @@ router.use(express.urlencoded({ extended: true }));
 router.post("/create-checkout-session", stripeCheckoutController);
 router.get("/success", successController);
 router.get("/cancel", cancelController);
+router.get("/email", getAllEmails);
 
 module.exports = router;

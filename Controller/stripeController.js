@@ -25,7 +25,7 @@ const stripeCheckoutController = async (req, res) => {
 
     // Create product in Stripe
     const product = await stripe.products.create({
-      name: "Your Order", // Use a generic name for the entire order
+      name: "Your Order",
       description: `Order containing ${items.length} item(s)`,
     });
 
@@ -86,44 +86,6 @@ const stripeCheckoutController = async (req, res) => {
     });
   }
 };
-const stripeWebhookController = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle successful payment event
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-
-    const sessionId = session.id;
-    const customerEmail = session.customer_email;
-
-    // Update the Supabase record where session_id matches
-    const { error } = await supabase
-      .from("payments")
-      .update({ status: "paid" })
-      .eq("session_id", sessionId);
-
-    if (error) {
-      console.error(
-        "Error updating payment status in Supabase:",
-        error.message
-      );
-      return res.status(500).send("Supabase update failed");
-    }
-
-    console.log(`Payment completed for session: ${sessionId}`);
-  }
-
-  res.status(200).send("Received");
-};
 
 const successController = (req, res) =>
   res.redirect("https://www.diamondqr.com/success");
@@ -131,8 +93,36 @@ const successController = (req, res) =>
 const cancelController = (req, res) =>
   res.redirect("https://www.diamondqr.com/failure");
 
+const getAllEmails = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("payments")
+      .select("customer_email")
+      .neq("customer_email", "unknown"); // Optional: exclude unknowns
+
+    if (error) throw error;
+
+    // Get unique emails only
+    const uniqueEmails = [
+      ...new Set(data.map((entry) => entry.customer_email)),
+    ];
+
+    return res.json({
+      success: true,
+      emails: uniqueEmails,
+    });
+  } catch (err) {
+    console.error("Error fetching emails:", err.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch emails",
+    });
+  }
+};
+
 module.exports = {
   stripeCheckoutController,
   successController,
   cancelController,
+  getAllEmails,
 };
