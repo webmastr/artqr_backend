@@ -63,9 +63,12 @@ const productConfigs = [
     retail_price: 33,
     variants: {
       8024: { size: "S", price: 33 },
+      8025: { size: "M", price: 33 },
+      8026: { size: "L", price: 33 },
+      8027: { size: "XL", price: 33 },
     },
     body: {
-      variant_ids: [8024],
+      variant_ids: [8024, 8025, 8026, 8027],
       printfile_id: 1,
       format: "jpg",
       width: 0,
@@ -114,42 +117,15 @@ const productConfigs = [
     },
   },
   {
-    product_id: 565,
-    name: "Product 565",
-    retail_price: 33,
-    variants: {
-      14453: { size: "One size", color: "Black", price: 33 },
-    },
-    body: {
-      variant_ids: [14453],
-      printfile_id: 235,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 1800,
-            area_height: 1800,
-            width: 1800,
-            height: 1800,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
     product_id: 682,
     name: "Product 682",
     retail_price: 33,
     variants: {
       16952: { size: "5.5″×8.5″", color: "Black", price: 33 },
+      16953: { size: "5.5″×8.5″", color: "Blue", price: 33 },
     },
     body: {
-      variant_ids: [16952],
+      variant_ids: [16952, 16953],
       printfile_id: 444,
       format: "jpg",
       width: 0,
@@ -246,9 +222,27 @@ const productConfigs = [
         color: "Anthracite",
         price: 33,
       },
+      20797: {
+        name: "Stanley/Stella SASU009 (Anthracite / M)",
+        size: "M",
+        color: "Anthracite",
+        price: 33,
+      },
+      20798: {
+        name: "Stanley/Stella SASU009 (Anthracite / L)",
+        size: "L",
+        color: "Anthracite",
+        price: 33,
+      },
+      20799: {
+        name: "Stanley/Stella SASU009 (Anthracite / XL)",
+        size: "XL",
+        color: "Anthracite",
+        price: 33,
+      },
     },
     body: {
-      variant_ids: [20796],
+      variant_ids: [20798, 20797, 20796, 20799],
       printfile_id: 1,
       format: "jpg",
       width: 0,
@@ -263,62 +257,6 @@ const productConfigs = [
             height: 1400,
             top: 400, // moved lower
             left: 1500, // moved towards right chest
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 644,
-    name: "All-Over Print Recycled Unisex Sports Jersey",
-    retail_price: 33,
-    variants: {
-      16260: { size: "S", color: "White", price: 33 },
-    },
-    body: {
-      variant_ids: [16260],
-      printfile_id: 400,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 1800,
-            area_height: 2400,
-            width: 1800,
-            height: 2400,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 605,
-    name: "Product 605",
-    retail_price: 33,
-    variants: {
-      15524: { size: "AirPods", color: "Black", price: 33 },
-    },
-    body: {
-      variant_ids: [15524],
-      printfile_id: 336,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 318,
-            area_height: 318,
-            width: 318,
-            height: 318,
-            top: 0,
-            left: 0,
           },
         },
       ],
