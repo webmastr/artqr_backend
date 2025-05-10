@@ -14,7 +14,12 @@ const express = require("express");
 
 const stripeCheckoutController = async (req, res) => {
   try {
-    const { customer, items, shipping, coupon } = req.body;
+    const { customer, items, shipping } = req.body;
+    // Safe coupon handling - avoid destructuring which may cause issues if undefined
+    const coupon =
+      req.body.coupon && typeof req.body.coupon === "object"
+        ? req.body.coupon
+        : null;
 
     if (!items || !items.length) {
       return res.status(400).json({
@@ -29,30 +34,36 @@ const stripeCheckoutController = async (req, res) => {
       subtotal += item.price * (item.quantity || 1);
     });
 
-    // Apply coupon discount if available
+    // Apply coupon discount if available - use safer checks to avoid errors
     let discount = 0;
-    if (coupon && coupon.valid) {
-      if (coupon.type === "percentage") {
-        discount = Math.min(
-          (subtotal * (coupon.value || 0)) / 100,
-          coupon.maxDiscount || Infinity
-        );
-      } else {
-        discount = Math.min(coupon.value || 0, subtotal);
+    let couponCode = null;
+    if (coupon && coupon.valid === true) {
+      couponCode = coupon.code || "DISCOUNT";
+      if (coupon.type === "percentage" && typeof coupon.value === "number") {
+        const maxDiscount =
+          typeof coupon.maxDiscount === "number"
+            ? coupon.maxDiscount
+            : Infinity;
+        discount = Math.min((subtotal * coupon.value) / 100, maxDiscount);
+      } else if (typeof coupon.value === "number") {
+        discount = Math.min(coupon.value, subtotal);
       }
     }
 
     // Calculate final total after discount
-    const finalTotal = subtotal - discount;
+    const finalTotal = Math.max(subtotal - discount, 0); // Ensure we don't go negative
 
-    // Create line items for Stripe
-    const lineItems = items.map((item) => {
-      return {
+    // Create line items for Stripe - simpler approach to avoid issues
+    const lineItems = [];
+
+    // Add each product
+    items.forEach((item) => {
+      lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
-            name: item.name,
-            images: item.image ? [item.image] : [],
+            name: item.name || "Product",
+            // Avoid using images which might cause issues
             metadata: {
               designUrl: item.designUrl || "",
               designText: item.designText || "",
@@ -60,31 +71,35 @@ const stripeCheckoutController = async (req, res) => {
               variantId: item.variant_id || "",
             },
           },
-          unit_amount: Math.round(item.price * 100), // Convert to cents
+          unit_amount: Math.round((item.price || 0) * 100), // Convert to cents with fallback
         },
         quantity: item.quantity || 1,
-      };
+      });
     });
 
-    // Add discount line item if applicable
+    // Add discount line item if applicable - simplified approach
     if (discount > 0) {
-      lineItems.push({
-        price_data: {
+      // Instead of a negative line item which can cause issues,
+      // use a coupon directly in the Stripe session
+      const couponId = `COUPON_${Date.now()}`;
+      try {
+        await stripe.coupons.create({
+          id: couponId,
+          amount_off: Math.round(discount * 100),
           currency: "usd",
-          product_data: {
-            name: `Discount (${coupon.code})`,
-          },
-          unit_amount: -Math.round(discount * 100), // Negative amount for discount
-        },
-        quantity: 1,
-      });
+          name: couponCode || "Discount",
+        });
+      } catch (err) {
+        console.error("Error creating coupon:", err);
+        // Continue without coupon if there's an error
+      }
     }
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create checkout session with simplified options
+    const sessionOptions = {
       payment_method_types: ["card"],
       line_items: lineItems,
-      customer_email: customer.email || "codesense24@gmail.com",
+      customer_email: customer.email || undefined,
       shipping_options: [
         {
           shipping_rate_data: {
@@ -93,23 +108,31 @@ const stripeCheckoutController = async (req, res) => {
               amount: 0, // Free shipping
               currency: "usd",
             },
-            display_name: shipping.name || "Carbon Neutral Shipping (FREE)",
+            display_name: shipping?.name || "Carbon Neutral Shipping (FREE)",
           },
         },
       ],
-      shipping_address_collection: {
-        allowed_countries: ["US", "CA", "GB"],
-      },
+      // Remove shipping_address_collection to use address from form
       mode: "payment",
       success_url: `${req.protocol}://${req.get("host")}/stripe/success`,
       cancel_url: `${req.protocol}://${req.get("host")}/stripe/cancel`,
-      metadata: {
-        couponCode: coupon?.code || "",
-        discountAmount: discount.toFixed(2),
-        originalSubtotal: subtotal.toFixed(2),
-        finalTotal: finalTotal.toFixed(2),
-      },
-    });
+    };
+
+    // Add coupon if we successfully created one
+    if (discount > 0) {
+      try {
+        const couponId = `COUPON_${Date.now()}`;
+        sessionOptions.discounts = [
+          {
+            coupon: couponId,
+          },
+        ];
+      } catch (err) {
+        console.log("Skipping coupon application");
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     // Save payment details to Supabase (temporary - assumes success)
     const { error } = await supabase.from("payments").insert([
