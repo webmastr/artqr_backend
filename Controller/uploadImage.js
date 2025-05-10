@@ -118,37 +118,6 @@ const productConfigs = [
     },
   },
   {
-    product_id: 565,
-    name: "Product 565",
-    retail_price: 33,
-    variants: {
-      14453: { size: "One size", color: "Black", price: 33 },
-      14454: { size: "One size", color: "Navy", price: 33 },
-      14455: { size: "One size", color: "Red", price: 33 },
-      14456: { size: "One size", color: "Rope", price: 33 },
-    },
-    body: {
-      variant_ids: [14453, 14454, 14455, 14456],
-      printfile_id: 235,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 1800,
-            area_height: 1800,
-            width: 1800,
-            height: 1800,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
     product_id: 682,
     name: "Product 682",
     retail_price: 33,
@@ -297,69 +266,6 @@ const productConfigs = [
             height: 1400,
             top: 400, // moved lower
             left: 1500, // moved towards right chest
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 644,
-    name: "All-Over Print Recycled Unisex Sports Jersey",
-    retail_price: 33,
-    variants: {
-      16260: { size: "S", color: "White", price: 33 },
-      16261: { size: "M", color: "White", price: 33 },
-      16262: { size: "L", color: "White", price: 33 },
-      16263: { size: "XL", color: "White", price: 33 },
-      16264: { size: "2XL", color: "White", price: 33 },
-    },
-    body: {
-      variant_ids: [16260, 16261, 16262, 16263, 16264],
-      printfile_id: 400,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 1800,
-            area_height: 2400,
-            width: 1800,
-            height: 2400,
-            top: 0,
-            left: 0,
-          },
-        },
-      ],
-    },
-  },
-  {
-    product_id: 605,
-    name: "Product 605",
-    retail_price: 33,
-    variants: {
-      15524: { size: "AirPods", color: "Black", price: 33 },
-      15525: { size: "AirPods", color: "Blue", price: 33 },
-      15526: { size: "AirPods", color: "Grey", price: 33 },
-      15529: { size: "AirPods", color: "Pink", price: 33 },
-    },
-    body: {
-      variant_ids: [15524, 15525, 15526, 15529],
-      printfile_id: 336,
-      format: "jpg",
-      width: 0,
-      product_options: {},
-      files: [
-        {
-          placement: "front",
-          position: {
-            area_width: 318,
-            area_height: 318,
-            width: 318,
-            height: 318,
-            top: 0,
-            left: 0,
           },
         },
       ],
