@@ -14,92 +14,33 @@ const express = require("express");
 
 const stripeCheckoutController = async (req, res) => {
   try {
-    const { customer, items, shipping } = req.body;
-    // Safe coupon handling - avoid destructuring which may cause issues if undefined
-    const coupon =
-      req.body.coupon && typeof req.body.coupon === "object"
-        ? req.body.coupon
-        : null;
+    const { customer, items, shipping, coupon, total } = req.body;
 
-    if (!items || !items.length) {
+    if (!items || !items.length || !items[0].name || !items[0].price) {
       return res.status(400).json({
         success: false,
-        error: "No items provided",
+        error: "Product name and price are required",
       });
     }
 
-    // Calculate total price from all items
-    let subtotal = 0;
-    items.forEach((item) => {
-      subtotal += item.price * (item.quantity || 1);
+    // Create product in Stripe
+    const product = await stripe.products.create({
+      name: "Your Order", // Use a generic name for the entire order
+      description: `Order containing ${items.length} item(s)`,
     });
 
-    // Apply coupon discount if available - use safer checks to avoid errors
-    let discount = 0;
-    let couponCode = null;
-    if (coupon && coupon.valid === true) {
-      couponCode = coupon.code || "DISCOUNT";
-      if (coupon.type === "percentage" && typeof coupon.value === "number") {
-        const maxDiscount =
-          typeof coupon.maxDiscount === "number"
-            ? coupon.maxDiscount
-            : Infinity;
-        discount = Math.min((subtotal * coupon.value) / 100, maxDiscount);
-      } else if (typeof coupon.value === "number") {
-        discount = Math.min(coupon.value, subtotal);
-      }
-    }
-
-    // Calculate final total after discount
-    const finalTotal = Math.max(subtotal - discount, 0); // Ensure we don't go negative
-
-    // Create line items for Stripe - simpler approach to avoid issues
-    const lineItems = [];
-
-    // Add each product
-    items.forEach((item) => {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: item.name || "Product",
-            // Avoid using images which might cause issues
-            metadata: {
-              designUrl: item.designUrl || "",
-              designText: item.designText || "",
-              size: item.size || "",
-              variantId: item.variant_id || "",
-            },
-          },
-          unit_amount: Math.round((item.price || 0) * 100), // Convert to cents with fallback
-        },
-        quantity: item.quantity || 1,
-      });
+    // Create price in Stripe - Use the calculated total from the cart
+    const stripePrice = await stripe.prices.create({
+      product: product.id,
+      unit_amount: Math.round(total * 100), // Use the total amount passed from frontend
+      currency: "usd",
     });
 
-    // Add discount line item if applicable - simplified approach
-    if (discount > 0) {
-      // Instead of a negative line item which can cause issues,
-      // use a coupon directly in the Stripe session
-      const couponId = `COUPON_${Date.now()}`;
-      try {
-        await stripe.coupons.create({
-          id: couponId,
-          amount_off: Math.round(discount * 100),
-          currency: "usd",
-          name: couponCode || "Discount",
-        });
-      } catch (err) {
-        console.error("Error creating coupon:", err);
-        // Continue without coupon if there's an error
-      }
-    }
-
-    // Create checkout session with simplified options
-    const sessionOptions = {
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: lineItems,
-      customer_email: customer.email || undefined,
+      line_items: [{ price: stripePrice.id, quantity: 1 }], // Single line item with the total price
+      customer_email: customer.email || "codesense24@gmail.com",
       shipping_options: [
         {
           shipping_rate_data: {
@@ -108,45 +49,26 @@ const stripeCheckoutController = async (req, res) => {
               amount: 0, // Free shipping
               currency: "usd",
             },
-            display_name: shipping?.name || "Carbon Neutral Shipping (FREE)",
+            display_name: shipping.name || "Carbon Neutral Shipping (Free)",
           },
         },
       ],
-      // Remove shipping_address_collection to use address from form
       mode: "payment",
       success_url: `${req.protocol}://${req.get("host")}/stripe/success`,
       cancel_url: `${req.protocol}://${req.get("host")}/stripe/cancel`,
-    };
-
-    // Add coupon if we successfully created one
-    if (discount > 0) {
-      try {
-        const couponId = `COUPON_${Date.now()}`;
-        sessionOptions.discounts = [
-          {
-            coupon: couponId,
-          },
-        ];
-      } catch (err) {
-        console.log("Skipping coupon application");
-      }
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionOptions);
+    });
 
     // Save payment details to Supabase (temporary - assumes success)
     const { error } = await supabase.from("payments").insert([
       {
         customer_email: customer.email || "unknown",
-        product_names: items.map((item) => item.name).join(", "),
-        original_price: subtotal,
-        discount: discount,
-        final_price: finalTotal,
-        shipping_name: shipping.name || "Carbon Neutral Shipping",
+        product_name: "Complete Order",
+        price: total, // Save the total amount
+        quantity: 1,
+        shipping_name: shipping.name,
         shipping_rate: 0, // Free shipping
-        status: "pending",
+        status: "completed",
         session_id: session.id,
-        coupon_code: coupon?.code || null,
       },
     ]);
 
@@ -164,11 +86,8 @@ const stripeCheckoutController = async (req, res) => {
     });
   }
 };
-
 const stripeWebhookController = async (req, res) => {
   const sig = req.headers["stripe-signature"];
-  const endpointSecret =
-    process.env.STRIPE_WEBHOOK_SECRET || "whsec_your_webhook_secret_here";
 
   let event;
 
