@@ -14,58 +14,116 @@ const express = require("express");
 
 const stripeCheckoutController = async (req, res) => {
   try {
-    const { customer, items, shipping } = req.body;
+    const { customer, items, shipping, coupon } = req.body;
 
-    if (!items || !items.length || !items[0].name || !items[0].price) {
+    if (!items || !items.length) {
       return res.status(400).json({
         success: false,
-        error: "Product name and price are required",
+        error: "No items provided",
       });
     }
 
-    // Create product in Stripe
-    const product = await stripe.products.create({ name: items[0].name });
-
-    // Create price in Stripe
-    const stripePrice = await stripe.prices.create({
-      product: product.id,
-      unit_amount: Math.round(items[0].price * 100), // cents
-      currency: "usd",
+    // Calculate total price from all items
+    let subtotal = 0;
+    items.forEach((item) => {
+      subtotal += item.price * (item.quantity || 1);
     });
+
+    // Apply coupon discount if available
+    let discount = 0;
+    if (coupon && coupon.valid) {
+      if (coupon.type === "percentage") {
+        discount = Math.min(
+          (subtotal * (coupon.value || 0)) / 100,
+          coupon.maxDiscount || Infinity
+        );
+      } else {
+        discount = Math.min(coupon.value || 0, subtotal);
+      }
+    }
+
+    // Calculate final total after discount
+    const finalTotal = subtotal - discount;
+
+    // Create line items for Stripe
+    const lineItems = items.map((item) => {
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: item.name,
+            images: item.image ? [item.image] : [],
+            metadata: {
+              designUrl: item.designUrl || "",
+              designText: item.designText || "",
+              size: item.size || "",
+              variantId: item.variant_id || "",
+            },
+          },
+          unit_amount: Math.round(item.price * 100), // Convert to cents
+        },
+        quantity: item.quantity || 1,
+      };
+    });
+
+    // Add discount line item if applicable
+    if (discount > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Discount (${coupon.code})`,
+          },
+          unit_amount: -Math.round(discount * 100), // Negative amount for discount
+        },
+        quantity: 1,
+      });
+    }
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: [{ price: stripePrice.id, quantity: items[0].quantity }],
+      line_items: lineItems,
       customer_email: customer.email || "codesense24@gmail.com",
       shipping_options: [
         {
           shipping_rate_data: {
             type: "fixed_amount",
             fixed_amount: {
-              amount: Math.round(parseFloat(shipping.rate) * 100),
+              amount: 0, // Free shipping
               currency: "usd",
             },
-            display_name: shipping.name,
+            display_name: shipping.name || "Carbon Neutral Shipping (FREE)",
           },
         },
       ],
+      shipping_address_collection: {
+        allowed_countries: ["US", "CA", "GB"],
+      },
       mode: "payment",
       success_url: `${req.protocol}://${req.get("host")}/stripe/success`,
       cancel_url: `${req.protocol}://${req.get("host")}/stripe/cancel`,
+      metadata: {
+        couponCode: coupon?.code || "",
+        discountAmount: discount.toFixed(2),
+        originalSubtotal: subtotal.toFixed(2),
+        finalTotal: finalTotal.toFixed(2),
+      },
     });
 
     // Save payment details to Supabase (temporary - assumes success)
     const { error } = await supabase.from("payments").insert([
       {
         customer_email: customer.email || "unknown",
-        product_name: items[0].name,
-        price: items[0].price,
-        quantity: items[0].quantity,
-        shipping_name: shipping.name,
-        shipping_rate: shipping.rate,
-        status: "completed",
+        product_names: items.map((item) => item.name).join(", "),
+        original_price: subtotal,
+        discount: discount,
+        final_price: finalTotal,
+        shipping_name: shipping.name || "Carbon Neutral Shipping",
+        shipping_rate: 0, // Free shipping
+        status: "pending",
         session_id: session.id,
+        coupon_code: coupon?.code || null,
       },
     ]);
 
@@ -86,6 +144,8 @@ const stripeCheckoutController = async (req, res) => {
 
 const stripeWebhookController = async (req, res) => {
   const sig = req.headers["stripe-signature"];
+  const endpointSecret =
+    process.env.STRIPE_WEBHOOK_SECRET || "whsec_your_webhook_secret_here";
 
   let event;
 
